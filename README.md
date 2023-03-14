@@ -1,110 +1,112 @@
 # WIN Backend Engineering Interview
 
-## Scenario
-
-Your mission is to build a portion of an order management system. You need to provide a service that allows other systems and teams to obtain information about orders.
-
-## Deliverables
-
-There are two deliverables for this project:
-
-1. An internal web service API for managing orders
-2. A test suite to validate the web service and library work as expected
-
-### General
-
-- Please use either **JavaScript/TypeScript or Python**.
-- You may use any framework, such as a web framework or test framework, to help you complete the project.
-- You may store the data for this system in any database you choose, however we've included a Docker image loaded with Postgres in this repo.
-- You may model the data any way you'd like, including adding data beyond the samples provided.
-
-### Web Service
-
-- Your service should implement several endpoints that accept POST, GET, PUT and DELETE requests. Also 1 endpoint that accepts GET all orders.
-- Your service should handle edge cases appropriately and return appropriate HTTP status codes.
-- Your service should return an error on creation/updating an order within 3 hrs of a pre-existing order.
-- Your service should return JSON results.
-- Your service should have at least one test.
-
-## Sample Data
-
-Below is some sample data you can use to populate your database. Feel free to extend or modify this data for your project:
-
-Service Records
-
-```json
-[
-  {
-    "id": 123,
-    "name": "Inspection"
-  },
-  {
-    "id": 789,
-    "name": "Testing"
-  },
-  {
-    "id": 456,
-    "name": "Analysis"
-  }
-]
+### Models
+- Order Model
+```
+{
+    date: {
+        type: Date,
+        required: true
+    },
+    totalfee: {
+        type: Number,
+        required: true
+    },
+    services: {
+        type: id,
+        ref:'service',
+        required: true
+    }
+}
+```
+- Service Model
+```
+{
+    name: {
+        type: String,
+        required: true
+    }
+}
 ```
 
-Orders
+### Order APIs
+- Create an order
+- Create a order document from request body.
+  `Endpoint: BASE_URL/order/`
 
-```json
-[
-  {
-    "id": "223",
-    "datetime": "2022-11-01T11:11:11.111Z",
-    "totalfee": 100,
-    "services": [
-        {
-        "id": "123",
-        }
-    ]
-  },
-  {
-    "id": "224",
-    "datetime": "2022-11-01T11:11:11.111Z",
-    "totalfee": 100,
-    "services": [
-        {
-        "id": "789",
-        }
-    ]
-  },
-  {
-    "id": "225",
-    "datetime": "2022-11-01T11:11:11.111Z",
-    "totalfee": 100,
-    "services": [
-        {
-        "id": "456",
-        }
-    ]
+### POST /order/create
+- Create a Order document from request body. Get serviceId and totalfee in request body only.
+- Make sure the serviceId is a valid serviceId by checking the service exist in the service collection.
+- Return HTTP status 201 on a succesful Order Placed. Also return the Order document. The response should be a JSON object like [this](#successful-response-structure) 
+
+- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
+
+### GET /order/get/all
+- Returns all order in the collection
+- Return the HTTP status 200 if any documents are found. The response structure should be like [this](#successful-response-structure) 
+- If no documents are found then return an HTTP status 404 with a response like [this](#error-response-structure) 
+
+
+### PUT /order/:orderId
+- Updates a order by changing the its totalfee, service.
+- Check if the order exists . If it doesn't, return an HTTP status 404 with a response body like [this](#error-response-structure)
+- Return an HTTP status 200 if updated successfully with a body like [this](#successful-response-structure) 
+- return the updated order document. 
+
+### DELETE /order/:orderId
+- Check if the order exists it delete and return an HTTP status 200 without any response body.
+- If the order document doesn't exist then return an HTTP status of 404 with a body like [this](#error-response-structure) 
+
+## Response
+
+### Successful Response structure
+```yaml
+{
+  status: true,
+  data: {
+
   }
-]
+}
+```
+### Error Response structure
+```yaml
+{
+  status: false,
+  msg: ""
+}
 ```
 
-## Duration
 
-Up to 2 hours.
+## Collections
+### order
+```yaml
+{
+  "_id": "6412bcf9783eff332d87e6b4",
+  "date": "2023-03-16T06:53:45.262Z",
+  "totalfee": 250,
+  "services": {
+      "_id": "6412ac545e378fa7c4556bc2",
+      "name": "Analysis"
+  }
+}
+```
+## Approach
+- Use MongoDB as a database and expressjs for the backend framework
+- dependencies are express, mongoose, and dozens
+- express for backend framework, mongoose used for connection between MongoDB and nodejs, also defining schema and model, dotenv used for .env files where environment variables are stored.
+- The main module is server.js. In this module, all dependencies are required. our connection between MongoDB and nodejs is established in this module.
+- all the routes are defined in the routes.js module
+- there are post, get, put, and delete APIs are defined
+- controllers folders are used to control the functionalities of requested API
+- Models folders are used to define the schema of orders
 
-## Submission
-1.  Clone this repo
-2.  Create Web Services and tests
-3.  Submit a Pull Request (PR)
-4.  In the PR, include a README that includes the following:
-      - A description of your solution at a high-level, including language used, framework used, roughly how it works, etc.
-      - What trade-offs you made
-      - Any assumptions you made that affected your solution
-      - What you would change if you built this for production
-      - Brief instructions on how to setup the environment to run your project
-      - What parts of the spec were completed, how much time you spent, and any particular problems you ran into
+## production ready
 
-## Evaluation
-We are looking for: 
-1. Communication
-2. Solution Design
-3. Completeness
-4. Code clarity / readability
+- Authentication: Currently, anyone can place, update or delete orders. It is important to authenticate and authorize users before allowing them to perform these actions. This can be done using techniques like JSON Web Tokens (JWT) or OAuth.
+- Input Validation: Input validation is important to prevent invalid or malicious data from being stored in the database. This can be done using libraries like Joi or Express-validator.
+- Error Handling: Proper error handling can help in debugging and fixing issues faster. Custom error messages can be returned for different types of errors and logs can be maintained to track errors.
+- Performance Optimization: The backend can be optimized for better performance by using techniques like caching, compression, and load balancing.
+- Deployment: The backend can be deployed to a cloud provider like Vercel or Heroku for better scalability, reliability, and security.
+- Code Quality: The code can be reviewed and improved for better maintainability, readability, and extensibility. Tools like ESLint can be used for code linting and formatting.
+
+By implementing these changes, the backend can be made production-ready and can handle real-world scenarios.
