@@ -92,7 +92,7 @@
 ```
 ## Approach
 - Use MongoDB as a database and expressjs for the backend framework
-- dependencies are express, mongoose, and dozens
+- dependencies are express, mongoose, and dotenv
 - express for backend framework, mongoose used for connection between MongoDB and nodejs, also defining schema and model, dotenv used for .env files where environment variables are stored.
 - The main module is server.js. In this module, all dependencies are required. our connection between MongoDB and nodejs is established in this module.
 - all the routes are defined in the routes.js module
